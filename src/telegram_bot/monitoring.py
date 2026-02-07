@@ -12,7 +12,7 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 STATE_FILE = PROJECT_ROOT / "monitoring_chats.json"
 
 MONITORING_JOB_NAME = "monitoring_broadcast"
-MONITORING_INTERVAL = 90
+MONITORING_INTERVAL = 60
 
 
 def load_monitoring_chats() -> set:

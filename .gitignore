@@ -10,3 +10,7 @@ data/
 # Python cache
 __pycache__/
 *.pyc
+
+# Secrets and local state (do not commit)
+config.py
+monitoring_chats.json
