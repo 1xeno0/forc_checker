@@ -28,7 +28,7 @@ def _get_tasks_text() -> str:
         return "\n".join(tasks) if tasks else "No tasks."
     except Exception as e:
         logger.exception("Checker failed")
-        return f"Error: {e}"
+        return f"⚠️ Something is not working: {e!s}"
 
 
 def _get_tasks_list() -> list:
