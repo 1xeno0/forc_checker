@@ -70,7 +70,12 @@ def register_handlers(
         if arg == "on":
             chats.add(update.effective_chat.id)
             save_monitoring_chats(application)
-            ensure_monitoring_job(application, broadcast_callback)
+            if not ensure_monitoring_job(application, broadcast_callback):
+                await update.message.reply_text(
+                    "Monitoring could not start: job queue is not available. "
+                    "Install with: pip install 'python-telegram-bot[job-queue]'"
+                )
+                return
             await update.message.reply_text(
                 f"Monitoring is ON. You will be notified when the task list changes (check every {MONITORING_INTERVAL}s)."
             )
@@ -90,7 +95,12 @@ def register_handlers(
         chats = get_monitoring_chats(context)
         chats.add(update.effective_chat.id)
         save_monitoring_chats(application)
-        ensure_monitoring_job(application, broadcast_callback)
+        if not ensure_monitoring_job(application, broadcast_callback):
+            await update.message.reply_text(
+                "Monitoring could not start: job queue is not available. "
+                "Install with: pip install 'python-telegram-bot[job-queue]'"
+            )
+            return
         await update.message.reply_text(
             f"Monitoring is ON. You will be notified when the task list changes (check every {MONITORING_INTERVAL}s)."
         )

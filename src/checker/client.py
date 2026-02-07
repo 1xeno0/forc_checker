@@ -17,9 +17,11 @@ class CheckerClient:
         self.running = False
 
     def session(self) -> List[str]:
-        """Fetch current task list from URL (one task per line, last empty line stripped)."""
-        html = requests.get(self.url, timeout=30).text
-        lines = html.strip().split("\n")
+        """Fetch current task list from URL (one task per line). Normalizes line endings for Linux/Windows."""
+        text = requests.get(self.url, timeout=30).text
+        # Normalize \r\n and \r to \n so the same content gives the same list on all OSes
+        text = text.replace("\r\n", "\n").replace("\r", "\n")
+        lines = [line.strip() for line in text.strip().split("\n")]
         if lines and lines[-1] == "":
             lines = lines[:-1]
         return lines

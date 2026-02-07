@@ -8,8 +8,9 @@ from telegram.ext import Application, ContextTypes
 
 logger = logging.getLogger(__name__)
 
-PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
-STATE_FILE = PROJECT_ROOT / "monitoring_chats.json"
+# Paths: pathlib and / work the same on Linux and Windows
+_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
+STATE_FILE = _PROJECT_ROOT / "monitoring_chats.json"
 
 MONITORING_JOB_NAME = "monitoring_broadcast"
 MONITORING_INTERVAL = 60
@@ -49,8 +50,16 @@ def create_broadcast_callback(get_tasks_list: Callable[[], list]):
             return
         try:
             current_tasks = get_tasks_list()
-        except Exception:
+        except Exception as e:
             logger.exception("Checker failed in monitoring")
+            err_msg = f"⚠️ Monitoring check failed: {e!s}"
+            for chat_id in list(monitoring_chats):
+                try:
+                    await context.bot.send_message(chat_id=chat_id, text=err_msg)
+                except Exception as send_err:
+                    logger.warning("Could not send error to %s: %s", chat_id, send_err)
+                    monitoring_chats.discard(chat_id)
+                    save_monitoring_chats(context.application)
             return
         last_tasks = context.application.bot_data.get("last_monitoring_tasks")
         if current_tasks == last_tasks:
@@ -70,7 +79,13 @@ def create_broadcast_callback(get_tasks_list: Callable[[], list]):
     return broadcast
 
 
-def ensure_monitoring_job(application: Application, callback) -> None:
+def ensure_monitoring_job(application: Application, callback) -> bool:
+    """Schedule the monitoring job. Returns False if job queue is not available."""
+    if application.job_queue is None:
+        logger.warning(
+            "Job queue is not available. Install with: pip install 'python-telegram-bot[job-queue]'"
+        )
+        return False
     if not application.job_queue.get_jobs_by_name(MONITORING_JOB_NAME):
         application.job_queue.run_repeating(
             callback,
@@ -78,8 +93,11 @@ def ensure_monitoring_job(application: Application, callback) -> None:
             first=0,
             name=MONITORING_JOB_NAME,
         )
+    return True
 
 
 def stop_monitoring_job(application: Application) -> None:
+    if application.job_queue is None:
+        return
     for job in application.job_queue.get_jobs_by_name(MONITORING_JOB_NAME):
         job.schedule_removal()
