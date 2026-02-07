@@ -21,10 +21,10 @@ class Bot:
                 if len(forc_tasks_changed) != len(self.forc_tasks):
                     self.tg_bot_msg(forc_tasks_changed)
                 self.forc_tasks = forc_tasks_changed
-
-                time.sleep(self.interval)
             except Exception:
                 print("Error")  # можно заменить на error_log
+
+            time.sleep(self.interval)
 
     def session(self) -> list:
         html = requests.get(self.url).text
