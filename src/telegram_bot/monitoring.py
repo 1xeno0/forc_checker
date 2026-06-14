@@ -6,6 +6,8 @@ from typing import Callable
 
 from telegram.ext import Application, ContextTypes
 
+from src.telegram_bot.messages import send_long_text
+
 logger = logging.getLogger(__name__)
 
 # Paths: pathlib and / work the same on Linux and Windows
@@ -55,7 +57,7 @@ def create_broadcast_callback(get_tasks_list: Callable[[], list]):
             err_msg = f"⚠️ Monitoring check failed: {e!s}"
             for chat_id in list(monitoring_chats):
                 try:
-                    await context.bot.send_message(chat_id=chat_id, text=err_msg)
+                    await send_long_text(context.bot, chat_id, err_msg)
                 except Exception as send_err:
                     logger.warning("Could not send error to %s: %s", chat_id, send_err)
                     monitoring_chats.discard(chat_id)
@@ -70,7 +72,7 @@ def create_broadcast_callback(get_tasks_list: Callable[[], list]):
         )
         for chat_id in list(monitoring_chats):
             try:
-                await context.bot.send_message(chat_id=chat_id, text=text)
+                await send_long_text(context.bot, chat_id, text)
             except Exception as e:
                 logger.warning("Could not send to %s: %s", chat_id, e)
                 monitoring_chats.discard(chat_id)

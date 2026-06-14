@@ -5,6 +5,7 @@ from typing import Callable
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import ContextTypes, Application, CommandHandler, MessageHandler, filters
 
+from src.telegram_bot.messages import reply_long_text
 from src.telegram_bot.monitoring import (
     get_monitoring_chats,
     save_monitoring_chats,
@@ -56,7 +57,7 @@ def register_handlers(
     async def search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="typing")
         result = get_tasks_text()
-        await update.message.reply_text(f"Search result:\n{result}")
+        await reply_long_text(update.message, f"Search result:\n{result}")
 
     async def monitoring(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         if not context.args or len(context.args) != 1:
@@ -89,7 +90,7 @@ def register_handlers(
     async def button_search(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="typing")
         result = get_tasks_text()
-        await update.message.reply_text(f"Search result:\n{result}")
+        await reply_long_text(update.message, f"Search result:\n{result}")
 
     async def button_monitoring_on(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         chats = get_monitoring_chats(context)
